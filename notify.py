@@ -78,29 +78,38 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
     """Callback function when message comes"""
     is_highlight = int(is_highlight)
     is_displayed = int(is_displayed)
-    send = False
-
-    if weechat.buffer_get_string(bufferp, "localvar_kind") == "direct":
-        send = True
-
-    for keyword in get_config_value('keywords').split(','):
-        if keyword.lower() in message.lower():
-            send = True
+    kind = weechat.buffer_get_string(bufferp, "localvar_kind")
 
     if weechat.buffer_get_string(bufferp, "name") == "weechat":
+        return weechat.WEECHAT_RC_OK
+
+    weechat.prnt("", f"[NOTIF] prefix={prefix} message={message} kind={kind}")
+
+    # TODO change that
+    if prefix == "arnaud.morin":
+        weechat.prnt("", f"[NOTIF] From myself!")
+        return weechat.WEECHAT_RC_OK
+
+    if kind == "room":
         send = False
+        for keyword in get_config_value('keywords').split(','):
+            if keyword.lower() in message.lower():
+                send = True
+        if not send:
+            weechat.prnt("", f"[NOTIF] no keyword in room")
+            return weechat.WEECHAT_RC_OK
 
-    if send:
-        headers = {
-            'Content-Type': 'application/json',
-            'X-Auth-Token': get_config_value('auth_token'),
-        }
+    weechat.prnt("", f"[NOTIF] sending!")
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': get_config_value('auth_token'),
+    }
 
-        requests.post(
-            get_config_value('endpoint'),
-            data="{}: {}".format(prefix, message),
-            headers=headers,
-        )
+    requests.post(
+        get_config_value('endpoint'),
+        data=f"{prefix}: {message}".encode('utf-8'),
+        headers=headers,
+    )
 
     return weechat.WEECHAT_RC_OK
 
