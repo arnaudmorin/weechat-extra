@@ -83,11 +83,11 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
     if weechat.buffer_get_string(bufferp, "name") == "weechat":
         return weechat.WEECHAT_RC_OK
 
-    weechat.prnt("", f"[NOTIF] prefix={prefix} message={message} kind={kind}")
+    # weechat.prnt("", f"[NOTIF] prefix={prefix} message={message} kind={kind}")
 
     # TODO change that
     if prefix == "arnaud.morin":
-        weechat.prnt("", f"[NOTIF] From myself!")
+        # weechat.prnt("", f"[NOTIF] From myself!")
         return weechat.WEECHAT_RC_OK
 
     if kind == "room":
@@ -96,7 +96,7 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
             if keyword.lower() in message.lower():
                 send = True
         if not send:
-            weechat.prnt("", f"[NOTIF] no keyword in room")
+            # weechat.prnt("", f"[NOTIF] no keyword in room")
             return weechat.WEECHAT_RC_OK
 
     weechat.prnt("", f"[NOTIF] sending!")
