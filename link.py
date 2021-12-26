@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # vim:set shiftwidth=4 tabstop=4 softtabstop=4 expandtab textwidth=250:
 
-import weechat
-import requests
 from collections import deque
+import requests
+import weechat
 
 # script variables
 SCRIPT_NAME = "link"

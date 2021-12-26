@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim:set shiftwidth=4 tabstop=4 softtabstop=4 expandtab textwidth=250:
 
-import weechat
 import requests
+import weechat
 
 # script variables
 SCRIPT_NAME = "notify"
@@ -78,7 +78,10 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
     """Callback function when message comes"""
     is_highlight = int(is_highlight)
     is_displayed = int(is_displayed)
-    kind = weechat.buffer_get_string(bufferp, "localvar_kind")
+    kind = weechat.buffer_get_string(bufferp, "localvar_type")
+
+    if kind == 'server':
+        return weechat.WEECHAT_RC_OK
 
     if weechat.buffer_get_string(bufferp, "name") == "weechat":
         return weechat.WEECHAT_RC_OK
@@ -90,7 +93,7 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
         # weechat.prnt("", f"[NOTIF] From myself!")
         return weechat.WEECHAT_RC_OK
 
-    if kind == "room":
+    if kind == "channel":
         send = False
         for keyword in get_config_value('keywords').split(','):
             if keyword.lower() in message.lower():
@@ -99,7 +102,6 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
             # weechat.prnt("", f"[NOTIF] no keyword in room")
             return weechat.WEECHAT_RC_OK
 
-    weechat.prnt("", f"[NOTIF] sending!")
     headers = {
         'Content-Type': 'application/json',
         'X-Auth-Token': get_config_value('auth_token'),
