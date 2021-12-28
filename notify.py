@@ -30,6 +30,14 @@ def notify_config_init():
     notify_config_section["notify"] = weechat.config_new_section(
         notify_config_file, "notify", 0, 0, "", "", "", "", "", "", "", "", "", "")
 
+    notify_config_option["nick"] = weechat.config_new_option(
+        notify_config_file, notify_config_section["notify"],
+        "nick", "string", "Your local nick, to avoid sending notify if message comes from you", "", 0, 0,
+        "nickname", "nickname", 0, "", "", "", "", "", "")
+    notify_config_option["debug"] = weechat.config_new_option(
+        notify_config_file, notify_config_section["notify"],
+        "debug", "string", "debug mode (yes/no)", "", 0, 0,
+        "no", "no", 0, "", "", "", "", "", "")
     notify_config_option["endpoint"] = weechat.config_new_option(
         notify_config_file, notify_config_section["notify"],
         "endpoint", "string", "Endpoint URL where notifications are sent", "", 0, 0,
@@ -73,45 +81,49 @@ def notify_unload_cb():
     return weechat.WEECHAT_RC_OK
 
 
+def debug(message):
+    if get_config_value('debug') == 'yes':
+        weechat.prnt("", f"[notify] {message}")
+
+
 # Functions
 def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, message):
     """Callback function when message comes"""
     is_highlight = int(is_highlight)
     is_displayed = int(is_displayed)
     kind = weechat.buffer_get_string(bufferp, "localvar_type")
+    notify = weechat.buffer_get_string(bufferp, "localvar_notify")
+    nick = get_config_value('nick')
+    send = False
 
-    if kind == 'server':
+    # Discard unwanted stuff
+    if prefix == nick:
+        debug(f'Message from {nick}, discarding')
         return weechat.WEECHAT_RC_OK
 
-    if weechat.buffer_get_string(bufferp, "name") == "weechat":
-        return weechat.WEECHAT_RC_OK
-
-    # weechat.prnt("", f"[NOTIF] prefix={prefix} message={message} kind={kind}")
-
-    # TODO change that
-    if prefix == "arnaud.morin":
-        # weechat.prnt("", f"[NOTIF] From myself!")
-        return weechat.WEECHAT_RC_OK
+    if notify == "yes":
+        # /buffer setvar notify yes
+        debug('Message from a notify=yes buffer')
+        send = True
 
     if kind == "channel":
-        send = False
         for keyword in get_config_value('keywords').split(','):
             if keyword.lower() in message.lower():
+                debug('keyword found!')
                 send = True
-        if not send:
-            # weechat.prnt("", f"[NOTIF] no keyword in room")
-            return weechat.WEECHAT_RC_OK
 
-    headers = {
-        'Content-Type': 'application/json',
-        'X-Auth-Token': get_config_value('auth_token'),
-    }
+    if send:
+        debug('Sending notif!')
+        headers = {
+            'Content-Type': 'application/json',
+            'X-Auth-Token': get_config_value('auth_token'),
+        }
 
-    requests.post(
-        get_config_value('endpoint'),
-        data=f"{prefix}: {message}".encode('utf-8'),
-        headers=headers,
-    )
+        requests.post(
+            get_config_value('endpoint'),
+            data=f"{prefix}: {message}".encode('utf-8'),
+            headers=headers,
+        )
 
     return weechat.WEECHAT_RC_OK
 
