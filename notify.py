@@ -106,6 +106,10 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
         debug('Message from a notify=yes buffer')
         send = True
 
+    if kind == "private":
+        debug('Message from a private buffer')
+        send = True
+
     if kind == "channel":
         for keyword in get_config_value('keywords').split(','):
             if keyword.lower() in message.lower():
