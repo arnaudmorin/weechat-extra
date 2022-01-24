@@ -81,6 +81,28 @@ def notify_unload_cb():
     return weechat.WEECHAT_RC_OK
 
 
+def notify_hook_commands_and_completions():
+    """ Hook commands and completions. """
+    weechat.hook_command("notify", "Toggle notification for this room",
+                         "",
+                         "",
+                         "",
+                         "notify_cmd_notify", "")
+
+
+def notify_cmd_notify(data, bufferp, _useless):
+    """ Toggle notify = yes/no """
+    notify = weechat.buffer_get_string(bufferp, "localvar_notify")
+    if notify == "yes":
+        weechat.buffer_set(bufferp, 'localvar_del_notify', '')
+        weechat.prnt(bufferp, 'notify = no')
+    else:
+        weechat.buffer_set(bufferp, 'localvar_set_notify', 'yes')
+        weechat.prnt(bufferp, 'notify = yes')
+
+    return weechat.WEECHAT_RC_OK
+
+
 def debug(message):
     if get_config_value('debug') == 'yes':
         weechat.prnt("", f"[notify] {message}")
@@ -140,6 +162,7 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
 
 if __name__ == "__main__":
     if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "notify_unload_cb", ""):
+        notify_hook_commands_and_completions()
         notify_config_init()
         notify_config_read()
         # Hook privmsg/hilights
