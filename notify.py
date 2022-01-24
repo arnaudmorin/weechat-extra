@@ -93,6 +93,7 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
     is_displayed = int(is_displayed)
     kind = weechat.buffer_get_string(bufferp, "localvar_type")
     notify = weechat.buffer_get_string(bufferp, "localvar_notify")
+    name = weechat.buffer_get_string(bufferp, "localvar_name")
     nick = get_config_value('nick')
     send = False
 
@@ -123,9 +124,14 @@ def notify_show(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
             'X-Auth-Token': get_config_value('auth_token'),
         }
 
+        if kind == "channel":
+            data = f"{name}/{prefix}: {message}".encode('utf-8')
+        else:
+            data = f"{prefix}: {message}".encode('utf-8')
+
         requests.post(
             get_config_value('endpoint'),
-            data=f"{prefix}: {message}".encode('utf-8'),
+            data=data,
             headers=headers,
         )
 
