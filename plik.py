@@ -85,7 +85,8 @@ def plik_log_cb(data, bufferp, date, tags, is_displayed, is_highlight, prefix, m
     """
     global plik_logs
     if message:
-        if message.startswith("An attachment has been saved to"):
+        # Yes, this is hacky, but this is IT in 2023
+        if "An attachment has been saved to" in message:
             words = message.split(" ")
             buf_name = weechat.buffer_get_string(bufferp, "name")
             if buf_name not in plik_logs.keys():
